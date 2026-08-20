@@ -186,10 +186,7 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
   <div class="tools">
     <button class="hbtn" id="helpBtn">❓ 使用說明</button>
     <button class="hbtn" id="editToggle">✏️ 編輯模式</button>
-    <button class="hbtn" id="expHtml">💾 匯出HTML</button>
-    <button class="hbtn" id="expJson">⭳ JSON</button>
-    <button class="hbtn" id="impBtn">⭱ 匯入</button>
-    <input type="file" id="impFile" accept=".json,.html" style="display:none">
+    <button class="hbtn" id="submitBtn">📮 提交讓大家看到</button>
   </div>
 </header>
 <div id="banner"></div>
@@ -263,7 +260,7 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
   <ul>
     <li>改名、改備註、新增子女／兄弟、刪除（含後代）。</li>
     <li>編輯會自動存到「這台電腦的這個瀏覽器」。</li>
-    <li>💾 匯出HTML／⭳ JSON：永久保存或備份；⭱ 匯入：還原。</li>
+    <li>想讓大家都看到你的修改？按「📮 提交讓大家看到」，會下載一份修改檔並開啟郵件草稿，請將該檔案附加後寄出，管理者確認後才會更新到正式網站。</li>
   </ul>
   <h3>📄 匯出PDF</h3>
   <p>在「家族樹」分頁按「📄 匯出PDF」，把目前展開的樹存成 PDF（先聚焦到某一房，字會更清楚）。</p>
@@ -671,24 +668,14 @@ function buildIndex(){let h='';
 function download(content,name,type){const blob=new Blob([content],{type:type});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
   document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
-document.getElementById('expJson').onclick=()=>download(JSON.stringify({nodes:serialize(),links:serializeLinks(),marks:serializeMarks()}),'族譜資料.json','application/json');
-document.getElementById('expHtml').onclick=()=>{const clone=document.documentElement.cloneNode(true);
-  clone.querySelector('#data').textContent=JSON.stringify(serialize());
-  clone.querySelector('#links').textContent=JSON.stringify(serializeLinks());
-  clone.querySelector('#marks').textContent=JSON.stringify(serializeMarks());
-  const b=clone.querySelector('#banner'); if(b){b.style.display='none';b.innerHTML='';}
-  download('<!DOCTYPE html>\n'+clone.outerHTML,'族譜查詢.html','text/html');};
-document.getElementById('impBtn').onclick=()=>document.getElementById('impFile').click();
-document.getElementById('impFile').onchange=e=>{const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
-  rd.onload=()=>{try{let arr,lks=[],mks=[];
-    if(f.name.endsWith('.html')){const m=rd.result.match(/<script id="data"[^>]*>([\s\S]*?)<\/script>/); arr=JSON.parse(m[1]);
-      const ml=rd.result.match(/<script id="links"[^>]*>([\s\S]*?)<\/script>/); if(ml)lks=JSON.parse(ml[1]);
-      const mm=rd.result.match(/<script id="marks"[^>]*>([\s\S]*?)<\/script>/); if(mm)mks=JSON.parse(mm[1]);}
-    else {const parsed=JSON.parse(rd.result); if(Array.isArray(parsed)){arr=parsed;lks=[];} else {arr=parsed.nodes; lks=parsed.links||[]; mks=parsed.marks||[];}}
-    if(!Array.isArray(arr))throw 0;
-    loadData(arr); loadLinks(lks); marked=new Set((mks||[]).filter(i=>nodes.has(i))); persist(); refreshStats(); selId=rootId; focusId=rootId; expanded=new Set([rootId]); comparePeople=[];
-    showDetail(rootId); showBanner('已匯入資料。 <a id="revert">還原原始族譜</a>');
-  }catch(err){alert('匯入失敗：檔案格式不正確。');}}; rd.readAsText(f); e.target.value='';};
+document.getElementById('submitBtn').onclick=()=>{
+  const ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','');
+  const fname='族譜修改_'+ts+'.json';
+  download(JSON.stringify({nodes:serialize(),links:serializeLinks(),marks:serializeMarks()}),fname,'application/json');
+  const subject=encodeURIComponent('族譜修改建議');
+  const body=encodeURIComponent('剛剛下載了一個「'+fname+'」檔案，請將它附加到這封信一併寄出。\n\n（請在此說明你改了什麼）\n');
+  setTimeout(()=>{location.href='mailto:fire1399@gmail.com?subject='+subject+'&body='+body;},300);
+};
 
 /* ---------- initial ---------- */
 (function(){let f=null; for(const id of nodes.keys()){if((nodes.get(id).note||'').includes('開基祖')){f=id;break;}}
