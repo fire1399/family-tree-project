@@ -674,7 +674,7 @@ document.getElementById('submitBtn').onclick=()=>{
   download(JSON.stringify({nodes:serialize(),links:serializeLinks(),marks:serializeMarks()}),fname,'application/json');
   const subject=encodeURIComponent('族譜修改建議');
   const body=encodeURIComponent('剛剛下載了一個「'+fname+'」檔案，請將它附加到這封信一併寄出。\n\n（請在此說明你改了什麼）\n');
-  setTimeout(()=>{location.href='mailto:fire1399@gmail.com?subject='+subject+'&body='+body;},300);
+  setTimeout(()=>{location.href='mailto:maxxlee1399@gmail.com?subject='+subject+'&body='+body;},300);
 };
 
 /* ---------- initial ---------- */
