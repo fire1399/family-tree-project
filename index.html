@@ -232,7 +232,6 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
       <div class="hint">族譜中特別註記的房祖、世系、過繼與人物。</div>
       <div class="dbar" id="idxMenu">
         <button class="minibtn" data-idx="mine">⭐ 個人標記</button>
-        <button class="minibtn" data-idx="links">🔗 出繼關係</button>
         <button class="minibtn" data-idx="house">🏠 房別</button>
         <button class="minibtn" data-idx="line">🌳 世系分支</button>
       </div>
@@ -262,7 +261,7 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
   <h3>🔗 過繼／出繼</h3>
   <p>詳情頁若有過繼，會顯示「出繼至／本生自」的對象；點它會跳到兩房共同父族的家族樹，一次看清整段過繼。</p>
   <h3>⭐ 標記</h3>
-  <p>房別、開基祖、名人小傳，以及全部過繼關係清單。</p>
+  <p>個人標記、房別、世系分支等快捷分類清單。</p>
   <h3>✏️ 編輯模式</h3>
   <ul>
     <li>改名、改備註、新增子女／兄弟、刪除（含後代）。</li>
@@ -651,7 +650,7 @@ function idxHouseLine(){const house=[],line=[];
 let idxFilter=null;
 function buildIndex(){
   const hl=idxHouseLine();
-  const counts={mine:marked.size, links:links.length, house:hl.house.length, line:hl.line.length};
+  const counts={mine:marked.size, house:hl.house.length, line:hl.line.length};
   if(!idxFilter)idxFilter=Object.keys(counts).find(k=>counts[k])||'mine';
   document.querySelectorAll('#idxMenu .minibtn').forEach(b=>b.classList.toggle('on',b.dataset.idx===idxFilter));
   let h='';
@@ -661,12 +660,6 @@ function buildIndex(){
       return '<div class="row" data-i="'+id+'"><div><span class="nm">'+esc(nm(id))+'</span><span class="gen">'+genOf(id)
         +'世</span></div><div class="pth">'+esc(tag||anc||'（始祖）')+'</div></div>';}).join('');
     if(!marked.size)h='<div class="hint">尚未加入任何個人標記。</div>';
-  } else if(idxFilter==='links'){
-    h+=links.map(l=>{const pa=pathIds(l.a).slice(0,-1).map(x=>nm(x)).slice(-2).join('›');
-      const pb=pathIds(l.b).slice(0,-1).map(x=>nm(x)).slice(-2).join('›');
-      return '<div class="row" data-i="'+l.a+'"><div><span class="nm">'+esc(nm(l.a))+'</span><span class="tg">'+(l.t||'過繼')+'</span></div>'
-        +'<div class="pth">'+esc(pa)+' <span style="color:var(--link)">➜ 出繼至 ➜</span> '+esc(pb)+'</div></div>';}).join('');
-    if(!links.length)h='<div class="hint">目前沒有過繼／出繼關係。</div>';
   } else {
     const list=idxFilter==='house'?hl.house:hl.line;
     h+=list.map(id=>{const tag=nodes.get(id).note.split(/\r?\n/)[0].trim().slice(0,14);
