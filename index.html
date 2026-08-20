@@ -230,6 +230,12 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
     </div>
     <div class="pad" id="tab-index" style="display:none">
       <div class="hint">族譜中特別註記的房祖、世系、過繼與人物。</div>
+      <div class="dbar" id="idxMenu">
+        <button class="minibtn" data-idx="mine">⭐ 個人標記</button>
+        <button class="minibtn" data-idx="links">🔗 出繼關係</button>
+        <button class="minibtn" data-idx="house">🏠 房別</button>
+        <button class="minibtn" data-idx="line">🌳 世系分支</button>
+      </div>
       <div class="list" id="indexlist"></div>
     </div>
   </div>
@@ -637,33 +643,42 @@ function gotoSearchFor(id){sb.value=nm(id); runSearch(); gotoTab('search'); show
   if(row){res.querySelectorAll('.row').forEach(r=>r.classList.remove('sel')); row.classList.add('sel');}}
 
 /* ---------- index ---------- */
-function buildIndex(){let h='';
-  if(marked.size){h+='<div class="idxgroup"><h4>★ 我的標記（'+marked.size+'）</h4>';
+function idxHouseLine(){const house=[],line=[];
+  for(const id of nodes.keys()){const n=nodes.get(id).note; if(!n)continue; const f=n.split(/\r?\n/)[0].trim();
+    if(/房$/.test(f)||(f.length<=4&&f.includes('房')))house.push(id);
+    else if(n.includes('世系'))line.push(id);}
+  return {house,line};}
+let idxFilter=null;
+function buildIndex(){
+  const hl=idxHouseLine();
+  const counts={mine:marked.size, links:links.length, house:hl.house.length, line:hl.line.length};
+  if(!idxFilter)idxFilter=Object.keys(counts).find(k=>counts[k])||'mine';
+  document.querySelectorAll('#idxMenu .minibtn').forEach(b=>b.classList.toggle('on',b.dataset.idx===idxFilter));
+  let h='';
+  if(idxFilter==='mine'){
     h+=[...marked].map(id=>{const anc=pathIds(id).slice(0,-1).map(x=>nm(x)).slice(-3).join('›');
       const tag=(nodes.get(id).note||'').split(/\r?\n/)[0].trim().slice(0,14);
       return '<div class="row" data-i="'+id+'"><div><span class="nm">'+esc(nm(id))+'</span><span class="gen">'+genOf(id)
         +'世</span></div><div class="pth">'+esc(tag||anc||'（始祖）')+'</div></div>';}).join('');
-    h+='</div>';}
-  if(links.length){h+='<div class="idxgroup"><h4>🔗 過繼／出繼關係（'+links.length+' 對）</h4>';
+    if(!marked.size)h='<div class="hint">尚未加入任何個人標記。</div>';
+  } else if(idxFilter==='links'){
     h+=links.map(l=>{const pa=pathIds(l.a).slice(0,-1).map(x=>nm(x)).slice(-2).join('›');
       const pb=pathIds(l.b).slice(0,-1).map(x=>nm(x)).slice(-2).join('›');
       return '<div class="row" data-i="'+l.a+'"><div><span class="nm">'+esc(nm(l.a))+'</span><span class="tg">'+(l.t||'過繼')+'</span></div>'
         +'<div class="pth">'+esc(pa)+' <span style="color:var(--link)">➜ 出繼至 ➜</span> '+esc(pb)+'</div></div>';}).join('');
-    h+='</div>';}
-  const g={'開基與名人':[],'房別':[],'世系分支':[],'其他註記':[]};
-  for(const id of nodes.keys()){const n=nodes.get(id).note; if(!n)continue; const f=n.split(/\r?\n/)[0].trim();
-    if(n.includes('開基祖')||n.length>40)g['開基與名人'].push(id);
-    else if(/房$/.test(f)||(f.length<=4&&f.includes('房')))g['房別'].push(id);
-    else if(n.includes('世系'))g['世系分支'].push(id); else g['其他註記'].push(id);}
-  for(const k in g){if(!g[k].length)continue; h+='<div class="idxgroup"><h4>'+k+'（'+g[k].length+'）</h4>';
-    h+=g[k].map(id=>{const tag=nodes.get(id).note.split(/\r?\n/)[0].trim().slice(0,14);
+    if(!links.length)h='<div class="hint">目前沒有過繼／出繼關係。</div>';
+  } else {
+    const list=idxFilter==='house'?hl.house:hl.line;
+    h+=list.map(id=>{const tag=nodes.get(id).note.split(/\r?\n/)[0].trim().slice(0,14);
       const anc=pathIds(id).slice(0,-1).map(x=>nm(x)).slice(-3).join('›');
       return '<div class="row" data-i="'+id+'"><div><span class="nm">'+esc(nm(id))+'</span><span class="gen">'+genOf(id)
-        +'世</span></div><div class="pth">'+esc(tag)+(anc?'\u3000·\u3000…'+esc(anc):'')+'</div></div>';}).join('');
-    h+='</div>';}
+        +'世</span></div><div class="pth">'+esc(tag)+(anc?'　·　…'+esc(anc):'')+'</div></div>';}).join('');
+    if(!list.length)h='<div class="hint">目前沒有相關註記。</div>';
+  }
   const il=document.getElementById('indexlist'); il.innerHTML=h;
   il.querySelectorAll('.row').forEach(el=>el.onclick=()=>showDetail(+el.dataset.i));
 }
+document.querySelectorAll('#idxMenu .minibtn').forEach(b=>b.onclick=()=>{idxFilter=b.dataset.idx; buildIndex();});
 
 /* ---------- export / import ---------- */
 function download(content,name,type){const blob=new Blob([content],{type:type});
