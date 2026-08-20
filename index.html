@@ -186,6 +186,7 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
   <div class="tools">
     <button class="hbtn" id="helpBtn">❓ 使用說明</button>
     <button class="hbtn" id="editToggle">✏️ 編輯模式</button>
+    <button class="hbtn" id="expHtml">💾 匯出HTML</button>
     <button class="hbtn" id="submitBtn">📮 提交讓大家看到</button>
   </div>
 </header>
@@ -668,6 +669,12 @@ function buildIndex(){let h='';
 function download(content,name,type){const blob=new Blob([content],{type:type});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
   document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
+document.getElementById('expHtml').onclick=()=>{const clone=document.documentElement.cloneNode(true);
+  clone.querySelector('#data').textContent=JSON.stringify(serialize());
+  clone.querySelector('#links').textContent=JSON.stringify(serializeLinks());
+  clone.querySelector('#marks').textContent=JSON.stringify(serializeMarks());
+  const b=clone.querySelector('#banner'); if(b){b.style.display='none';b.innerHTML='';}
+  download('<!DOCTYPE html>\n'+clone.outerHTML,'族譜查詢.html','text/html');};
 document.getElementById('submitBtn').onclick=()=>{
   const ts=new Date().toISOString().slice(0,16).replace('T','_').replace(':','');
   const fname='族譜修改_'+ts+'.json';
