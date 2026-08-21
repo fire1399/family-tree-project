@@ -18,7 +18,7 @@ header{background:linear-gradient(180deg,#7a1717,#5e1212); color:#f6ecd8;
   padding:14px 18px; box-shadow:var(--shadow); position:sticky; top:0; z-index:30;
   display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
 header .ht{flex:1; min-width:200px;}
-header h1{margin:0; font-size:21px; letter-spacing:2px; font-family:"PMingLiU","MingLiU",serif; cursor:pointer;}
+header h1{margin:0; font-size:29px; letter-spacing:2px; font-family:"PMingLiU","MingLiU",serif; cursor:pointer;}
 header h1:hover{color:#f3d38a;}
 #helpModal{display:none; position:fixed; inset:0; background:rgba(40,30,15,.55); z-index:50; padding:18px; overflow:auto;}
 #helpModal.show{display:flex; align-items:flex-start; justify-content:center;}
@@ -207,9 +207,9 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
     <div class="pad" id="tab-tree" style="display:none">
       <div class="dbar"><div class="crumb" id="crumb"></div></div>
       <div class="dbar">
-        <button class="minibtn" id="btnRoot">⌂ 回始祖</button>
-        <button class="minibtn" id="btnUp">⬆ 上一層</button>
-        <button class="minibtn" id="btnExpand">＋ 展開一層</button>
+        <button class="minibtn" id="btnRoot">⌂ 回開基祖</button>
+        <button class="minibtn" id="btnUp">⬆ 往上一層世系</button>
+        <button class="minibtn" id="btnExpand">＋ 展開下一層世系</button>
         <button class="minibtn" id="btnCollapse">－ 收合</button>
         <button class="minibtn on" id="btnLinks">🔗 過繼虛線</button>
         <button class="minibtn" id="btnPdf">📄 匯出PDF</button>
@@ -229,7 +229,7 @@ textarea.noteEdit{width:100%; min-height:90px; font:inherit; padding:8px 10px;
       <div class="diagram" id="cmpDiagram"><div class="dcanvas" id="cmpcanvas"></div></div>
     </div>
     <div class="pad" id="tab-index" style="display:none">
-      <div class="hint">族譜中特別註記的房祖、世系、過繼與人物。</div>
+      <div class="hint">族譜中特別註記的房祖、世系。</div>
       <div class="dbar" id="idxMenu">
         <button class="minibtn" data-idx="mine">⭐ 個人標記</button>
         <button class="minibtn" data-idx="house">🏠 房別</button>
@@ -542,7 +542,7 @@ function renderCrumb(){const anc=pathIds(focusId);
   document.getElementById('crumb').innerHTML='中心：'+anc.map((x,k)=>(k>0?'<span class="arw">›</span>':'')
     +'<a data-i="'+x+'" class="'+(x===focusId?'cc':'')+'">'+esc(nm(x))+'</a>').join('');
   document.querySelectorAll('#crumb a').forEach(a=>a.onclick=()=>{focusOn(+a.dataset.i); renderDiagram(); showDetail(+a.dataset.i);});}
-document.getElementById('btnRoot').onclick=()=>{focusOn(rootId); renderDiagram(); showDetail(rootId);};
+document.getElementById('btnRoot').onclick=()=>{focusOn(founderId); renderDiagram(); showDetail(founderId);};
 document.getElementById('btnUp').onclick=()=>{const pp=nodes.get(focusId).p; if(pp<0)return;
   expanded.add(pp); focusId=pp; renderDiagram(); showDetail(pp); scrollToNode(pp);};
 document.getElementById('btnExpand').onclick=()=>{const toAdd=[];
